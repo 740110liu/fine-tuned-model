@@ -1,6 +1,46 @@
-# 大模型微调项目（基于讯飞星辰MaaS平台）
+# 自动化专业导师模型 - 大模型微调项目
 
-基于 [讯飞星辰MaaS平台](https://training.xfyun.cn/modelSquare) 的大模型微调实践项目。
+基于 Qwen2.5-1.5B + LoRA 的自动化专业导师模型微调实践项目，支持多种免费微调方案。
+
+## 快速开始
+
+### 方案一：Google Colab（推荐）
+
+**GPU：** T4 16GB（免费，无时间限制）
+
+1. 打开 [Google Colab](https://colab.research.google.com/)
+2. 上传 `notebooks/fine_tune_colab.ipynb`
+3. 运行时 → 更改运行时类型 → 选择 **T4 GPU**
+4. 按顺序运行每个单元格
+
+### 方案二：Kaggle
+
+**GPU：** T4 x2 16GB（每周30小时免费）
+
+1. 打开 [Kaggle](https://www.kaggle.com/)
+2. 创建新 Notebook
+3. 上传 `notebooks/fine_tune_kaggle.ipynb`
+4. 设置 → Accelerator → 选择 **GPU T4 x2**
+5. 按顺序运行每个单元格
+
+### 方案三：本地运行
+
+**要求：** NVIDIA GPU（4GB+ 显存）
+
+```bash
+# Windows
+双击运行 run_local.bat
+
+# 或手动执行
+pip install -q transformers peft datasets accelerate bitsandbytes trl
+python scripts/local_finetune.py
+```
+
+**已测试配置：** RTX 3050 4GB（自动优化参数以适配小显存）
+
+---
+
+## 项目详情
 
 ## 平台简介
 
@@ -8,20 +48,32 @@
 
 ## 基座模型选择
 
-| 模型 | 适用场景 | 特点 |
-|------|----------|------|
-| Spark Mini / Mini Instruct | 文本生成、对话 | 轻量级，资源消耗少，训练快 |
-| Spark Lite / Lite Patch | 知识问答、情感分析 | 性能与资源平衡，适合一般场景 |
-| Spark Max | 工业控制、智能家居 | 高精度，适合复杂任务 |
+| 模型 | 参数量 | 适用场景 | 显存需求 |
+|------|--------|----------|----------|
+| Qwen2.5-0.5B-Instruct | 0.5B | 超轻量级，适合极小显存 | 2GB |
+| Qwen2.5-1.5B-Instruct | 1.5B | 轻量级，性能与资源平衡 | 4GB |
+| Qwen2.5-3B-Instruct | 3B | 中等规模，效果更好 | 8GB |
+| Qwen2.5-7B-Instruct | 7B | 高精度，需要较大显存 | 16GB |
 
-本项目选用：**[待填写模型名称]**
+本项目选用：**Qwen2.5-1.5B-Instruct**（适合 4GB 显存的 RTX 3050）
 
 ## 微调方法
 
 - **LoRA**（低秩适配）：仅更新少量参数，资源需求低，训练快，减少过拟合风险
 - **FFT**（全参数微调）：调整所有参数，充分利用模型表示能力，适合高精度需求
 
-本项目使用：**[待填写]**
+本项目使用：**LoRA**（低秩适配）
+
+### LoRA 配置
+
+```python
+LoraConfig(
+    r=4,                    # 秩（小显存用4，大显存可用8-16）
+    lora_alpha=8,           # 缩放系数
+    lora_dropout=0.05,      # 随机丢弃
+    target_modules=["q_proj", "v_proj"],  # 目标模块
+)
+```
 
 ## 数据集
 
@@ -97,22 +149,39 @@
 ## 目录结构
 
 ```
-├── README.md              # 项目说明
+├── README.md                    # 项目说明
+├── run_local.bat                # Windows 一键运行脚本
+├── requirements.txt             # Python 依赖
 ├── data/
-│   ├── README.md          # 数据格式说明
-│   ├── sample.jsonl       # 示例数据
-│   ├── train.jsonl        # 训练集（待添加）
-│   └── eval.jsonl         # 验证集（待添加）
+│   ├── README.md                # 数据格式说明
+│   ├── sample.jsonl             # 示例数据（5条）
+│   └── automation_advisor.jsonl # 训练数据（151条）
+├── notebooks/
+│   ├── fine_tune_colab.ipynb    # Google Colab 微调 notebook
+│   └── fine_tune_kaggle.ipynb   # Kaggle 微调 notebook
 ├── scripts/
-│   ├── preprocess.py      # 数据预处理（格式转换）
-│   └── evaluate.py        # 本地评估脚本
+│   ├── preprocess.py            # 数据预处理
+│   ├── validate_data.py         # 数据验证
+│   ├── evaluate.py              # 模型评估
+│   ├── inference.py             # 模型推理
+│   └── local_finetune.py        # 本地微调脚本
 ├── configs/
-│   └── training_config.yaml
-└── results/               # 评估结果
+│   └── training_config.yaml     # 训练配置
+└── results/                     # 评估结果
 ```
 
 ## 参考资料
 
-- [讯飞星辰MaaS微调平台](https://training.xfyun.cn/modelSquare)
+### 免费 GPU 平台
+- [Google Colab](https://colab.research.google.com/) - T4 16GB，免费无时间限制
+- [Kaggle](https://www.kaggle.com/) - T4 x2 16GB，每周30小时免费
+
+### 模型和文档
+- [Qwen2.5 模型库](https://huggingface.co/Qwen) - 基座模型
+- [PEFT 文档](https://huggingface.co/docs/peft) - LoRA 微调库
+- [TRL 文档](https://huggingface.co/docs/trl) - 训练库
+
+### 其他资源
+- [讯飞星辰MaaS微调平台](https://training.xfyun.cn/modelSquare) - 付费平台（可选）
 - [大模型微调学习笔记（CSDN）](https://blog.csdn.net/yang2330648064/article/details/149606413)
 - [大模型微调基础入门](https://www.xfyun.cn/)

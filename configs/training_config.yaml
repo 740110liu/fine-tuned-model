@@ -1,33 +1,42 @@
-# 训练配置
-# 根据实际需求修改
+# 讯飞星辰MaaS平台微调配置参考
+# https://training.xfyun.cn/modelSquare
+#
+# 以下参数在平台上通过UI配置，此文件仅作记录参考
 
+# ===== 模型选择 =====
 model:
-  name_or_path: "your-base-model"  # 基座模型路径
-  torch_dtype: "bfloat16"
-  trust_remote_code: true
+  # 可选: Spark Mini, Spark Mini Instruct, Spark Lite, Spark Lite Patch, Spark Max
+  # 也可选择平台支持的开源模型
+  name: "Spark Lite Patch"  # 待确认
+  task_type: "文本生成"      # 待确认
 
-lora:
-  r: 16
-  lora_alpha: 32
-  lora_dropout: 0.05
-  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+# ===== 训练方式 =====
+training_method: "LoRA"  # LoRA（部分参数微调）或 FFT（全参数微调）
 
-training:
-  output_dir: "./results"
-  num_train_epochs: 3
-  per_device_train_batch_size: 4
-  gradient_accumulation_steps: 4
-  learning_rate: 2e-4
-  warmup_ratio: 0.1
-  logging_steps: 10
-  save_strategy: "epoch"
-  evaluation_strategy: "epoch"
-  max_length: 2048
-  fp16: false
-  bf16: true
-  gradient_checkpointing: true
-  seed: 42
-
+# ===== 数据配置 =====
 data:
-  train_file: "data/train.jsonl"
-  eval_file: "data/eval.jsonl"
+  format: "Alpaca"
+  field_mapping:
+    instruction: "instruction"  # 任务指令
+    input: "input"              # 输入内容
+    output: "output"            # 期望输出
+    # system: "system"          # 系统提示词（可选）
+    # history: "history"        # 对话历史（可选）
+
+# ===== 训练参数 =====
+parameters:
+  learning_rate: null         # 学习率（平台默认）
+  epochs: null                # 训练次数（平台默认）
+  max_seq_length: null        # 分词最大长度（平台默认）
+  precision: "auto"           # 数值精度: auto / float16 / bfloat16 / float32
+  lora_rank: null             # LoRA秩（平台默认）
+  lora_dropout: 0.01          # LoRA随机丢弃（1%）
+  lora_alpha: null            # LoRA缩放系数（平台默认）
+  lora_target_modules: "all"  # LoRA作用模块: all 或指定模块
+
+# ===== 参数说明 =====
+# 学习率: 较小→稳定收敛但需更多迭代；较大→快速但可能不稳定
+# 训练次数: 越多→充分学习但可能过拟合
+# 分词最大长度: 超长输入会被截断
+# LoRA秩: 小→防过拟合；大→强表示能力
+# LoRA缩放系数: 过高→过度微调失去原能力；过低→效果不足

@@ -1,0 +1,33 @@
+# 训练配置
+# 根据实际需求修改
+
+model:
+  name_or_path: "your-base-model"  # 基座模型路径
+  torch_dtype: "bfloat16"
+  trust_remote_code: true
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+training:
+  output_dir: "./results"
+  num_train_epochs: 3
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 2e-4
+  warmup_ratio: 0.1
+  logging_steps: 10
+  save_strategy: "epoch"
+  evaluation_strategy: "epoch"
+  max_length: 2048
+  fp16: false
+  bf16: true
+  gradient_checkpointing: true
+  seed: 42
+
+data:
+  train_file: "data/train.jsonl"
+  eval_file: "data/eval.jsonl"

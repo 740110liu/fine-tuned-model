@@ -8,18 +8,29 @@
 
 **充分利用讯飞平台的免费数据处理工具 + 免费GPU进行微调**
 
-1. **数据准备**（讯飞平台免费功能）
-   - 问答对抽取（90%+准确率）
-   - 数据增强（2x-5x扩展）
-   - Prompt工程（50+模板）
-   - 导出 JSONL 格式
+#### 阶段1：数据准备（讯飞平台免费功能）
 
-2. **模型微调**（免费GPU）
-   - Google Colab / Kaggle / 本地
-   - 使用 Qwen2.5-1.5B + LoRA
+1. 登录 https://training.xfyun.cn/modelSquare
+2. 使用"问答对抽取"从原始文档提取问答对
+3. 使用"数据增强"扩充训练数据（推荐2-3倍）
+4. 使用"Prompt工程"优化instruction格式
+5. 导出 JSONL 格式
 
-3. **模型评估**
-   - 本地测试 / 讯飞平台评估
+详见 [讯飞平台数据准备指南](docs/xfyun_data_prep_guide.md)
+
+**本地数据增强（备用方案）：**
+```bash
+python scripts/enhance_data.py --input data/automation_advisor.jsonl --output data/enhanced.jsonl --factor 2
+```
+
+#### 阶段2：模型微调（免费GPU）
+
+- Google Colab / Kaggle / 本地
+- 使用 Qwen2.5-1.5B + LoRA
+
+#### 阶段3：模型评估
+
+- 本地测试 / 讯飞平台评估
 
 详见 [平台集成指南](docs/platform_integration.md)
 
